@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Realmcraft</title>
+<style>body{margin:0;background:#151022;color:#eee;font-family:system-ui,sans-serif}header{padding:14px 20px;background:#211738;display:flex;justify-content:space-between;align-items:center}button{background:#7c4dff;color:white;border:0;border-radius:8px;padding:9px 13px;cursor:pointer}.wrap{max-width:1100px;margin:auto;padding:18px}.toolbar,.panels{display:flex;gap:10px;flex-wrap:wrap}.toolbar>div,.panel{background:#211738;border:1px solid #40305e;border-radius:10px;padding:10px}.game{display:grid;place-items:center}.game canvas{max-width:100%;height:auto;border:2px solid #40305e;border-radius:10px;background:#111}.hotbar{display:flex;gap:5px;margin-top:8px}.slot{background:#211738;border:2px solid #40305e;border-radius:7px;padding:8px;min-width:54px;text-align:center}.selected{border-color:#c7a7ff}.panels{margin-top:10px}.panel{flex:1;min-width:210px}.panel h3{margin-top:0}.companion{padding:7px;border-top:1px solid #40305e}.muted{color:#aaa;font-size:.9em}</style>
+</head><body>
+<header><strong>⚔️ Realmcraft</strong><button id="newWorldBtn">New World</button></header>
+<main class="wrap">
+<div class="toolbar"><div>Biome: <b id="biomeLabel">Meadow</b></div><div>Day: <b id="dayLabel">1</b></div><div>❤ <b id="healthLabel">10</b>/10</div><div>WASD move · Mouse mine/attack · 1–6 select · E craft · R eat</div></div>
+<div class="game"><canvas id="gameCanvas" width="960" height="600"></canvas><div id="hotbar" class="hotbar"></div></div>
+<div class="panels"><section class="panel"><h3>🎒 Stats</h3><div id="gameStats"></div></section><section class="panel"><h3>🛠️ Crafting</h3><div id="craftingList"></div></section><section class="panel"><h3>🦄 Companions</h3><div id="companionList"></div><p class="muted">Rare companions can be tamed. Powerful ones require quests.</p></section><section class="panel"><h3>📜 Adventure Log</h3><div id="gameLog"></div></section></div>
+</main><script src="game.js"></script></body></html>
