@@ -11,8 +11,20 @@ const hot=[['grass','🟩'],['dirt','🟫'],['stone','⬜'],['wood','🪵'],['pl
 const colors={grass:0x62a84f,dirt:0x8b5a2b,stone:0x777777,wood:0x754c29,leaves:0x3e8c3e,coal:0x333333,iron:0xb77b5b,crystal:0x8e65e8,planks:0xb9824b,torch:0xffaa33};
 const solid=new Set(Object.keys(colors).filter(k=>k!=='torch'));
 const geo=new THREE.BoxGeometry(1,1,1);
+const textureCache={};
+function makePixelTexture(type){
+  if(textureCache[type])return textureCache[type];
+  const c=document.createElement('canvas');c.width=c.height=16;const ctx=c.getContext('2d');
+  const base={grass:'#62a84f',dirt:'#8b5a2b',stone:'#777777',wood:'#754c29',leaves:'#3e8c3e',coal:'#333333',iron:'#b77b5b',crystal:'#8e65e8',planks:'#b9824b',torch:'#ffaa33'}[type]||'#888';
+  ctx.fillStyle=base;ctx.fillRect(0,0,16,16);
+  let seed=type.length*97;for(let i=0;i<45;i++){seed=(seed*1664525+1013904223)>>>0;const x=seed%16;seed=(seed*1664525+1013904223)>>>0;const y=seed%16;const shade=(seed%3)-1;ctx.fillStyle=shade<0?'rgba(0,0,0,.22)':shade>0?'rgba(255,255,255,.16)':'rgba(0,0,0,.08)';ctx.fillRect(x,y,1+(seed%2),1+(seed%2));}
+  if(type==='grass'){ctx.fillStyle='#4f8f3e';ctx.fillRect(0,14,16,2);}
+  if(type==='stone'){ctx.fillStyle='rgba(255,255,255,.12)';for(let x=0;x<16;x+=4)ctx.fillRect(x,3,2,2);}
+  if(type==='wood'){ctx.fillStyle='rgba(30,15,5,.3)';for(let x=2;x<16;x+=5)ctx.fillRect(x,0,1,16);}
+  const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.colorSpace=THREE.SRGBColorSpace;textureCache[type]=t;return t;
+}
 function key(x,y,z){return x+','+y+','+z}
-function setBlock(x,y,z,type){const k=key(x,y,z); if(!type){blocks.delete(k); const old=meshes.get(k);if(old){scene.remove(old);meshes.delete(k)}return} blocks.set(k,type); if(meshes.has(k))scene.remove(meshes.get(k)); const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:colors[type]}));m.position.set(x+.5,y+.5,z+.5);scene.add(m);meshes.set(k,m)}
+function setBlock(x,y,z,type){const k=key(x,y,z); if(!type){blocks.delete(k); const old=meshes.get(k);if(old){scene.remove(old);meshes.delete(k)}return} blocks.set(k,type); if(meshes.has(k))scene.remove(meshes.get(k)); const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({map:makePixelTexture(type),color:0xffffff}));m.position.set(x+.5,y+.5,z+.5);scene.add(m);meshes.set(k,m)}
 function get(x,y,z){return blocks.get(key(x,y,z))}
 function height(x,z){return Math.floor(3+Math.sin(x*.45)*.8+Math.cos(z*.35)*.8)}
 function tree(x,y,z){for(let i=0;i<4;i++)setBlock(x,y+i,z,'wood');for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=2;dy<=4;dy++)if(Math.abs(dx)+Math.abs(dz)+(dy===4?1:0)<4)setBlock(x+dx,y+dy,z+dz,'leaves')}
