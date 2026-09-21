@@ -3,11 +3,29 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Realmcraft</title>
-<style>body{margin:0;background:#151022;color:#eee;font-family:system-ui,sans-serif}header{padding:14px 20px;background:#211738;display:flex;justify-content:space-between;align-items:center}button{background:#7c4dff;color:white;border:0;border-radius:8px;padding:9px 13px;cursor:pointer}.wrap{max-width:1100px;margin:auto;padding:18px}.toolbar,.panels{display:flex;gap:10px;flex-wrap:wrap}.toolbar>div,.panel{background:#211738;border:1px solid #40305e;border-radius:10px;padding:10px}.game{display:grid;place-items:center}.game canvas{max-width:100%;height:auto;border:2px solid #40305e;border-radius:10px;background:#111}.hotbar{display:flex;gap:5px;margin-top:8px}.slot{background:#211738;border:2px solid #40305e;border-radius:7px;padding:8px;min-width:54px;text-align:center}.selected{border-color:#c7a7ff}.panels{margin-top:10px}.panel{flex:1;min-width:210px}.panel h3{margin-top:0}.companion{padding:7px;border-top:1px solid #40305e}.muted{color:#aaa;font-size:.9em}</style>
-</head><body>
-<header><strong>⚔️ Realmcraft</strong><button id="newWorldBtn">New World</button></header>
-<main class="wrap">
-<div class="toolbar"><div>Biome: <b id="biomeLabel">Meadow</b></div><div>Day: <b id="dayLabel">1</b></div><div>❤ <b id="healthLabel">10</b>/10</div><div>WASD move · Mouse mine/attack · 1–6 select · E craft · R eat</div></div>
-<div class="game"><canvas id="gameCanvas" width="960" height="600"></canvas><div id="hotbar" class="hotbar"></div></div>
-<div class="panels"><section class="panel"><h3>🎒 Stats</h3><div id="gameStats"></div></section><section class="panel"><h3>🛠️ Crafting</h3><div id="craftingList"></div></section><section class="panel"><h3>🦄 Companions</h3><div id="companionList"></div><p class="muted">Rare companions can be tamed. Powerful ones require quests.</p></section><section class="panel"><h3>📜 Adventure Log</h3><div id="gameLog"></div></section></div>
-</main><script src="game.js"></script></body></html>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif;color:#fff}
+#game{display:block;width:100%;height:100%;image-rendering:pixelated}
+#crosshair{position:fixed;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;pointer-events:none}
+#crosshair:before,#crosshair:after{content:"";position:absolute;background:#fff;box-shadow:0 0 2px #000}
+#crosshair:before{width:2px;height:14px;left:6px}#crosshair:after{width:14px;height:2px;top:6px}
+#hud{position:fixed;inset:0;pointer-events:none}
+#top{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.45);padding:8px 10px;border-radius:5px}
+#help{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.45);padding:8px 10px;border-radius:5px;text-align:right}
+#hotbar{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:3px}
+.slot{width:48px;height:48px;border:2px solid #555;background:rgba(0,0,0,.65);display:grid;place-items:center;font-size:12px;box-sizing:border-box;position:relative}
+.slot.sel{border-color:#fff;box-shadow:0 0 0 1px #000}
+.slot b{font-size:20px}.count{position:absolute;right:3px;bottom:1px;font-size:13px}
+#start{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.72);z-index:5}
+#start button{font-size:20px;padding:14px 22px;background:#6b4b2a;color:#fff;border:2px solid #fff;cursor:pointer}
+#inventory{position:fixed;display:none;left:50%;top:50%;transform:translate(-50%,-50%);background:#c6c6c6;border:4px solid #333;padding:18px;color:#111;z-index:4;min-width:360px}
+#inventory h2{margin-top:0}.invgrid{display:grid;grid-template-columns:repeat(9,42px);gap:4px}.invslot{width:42px;height:42px;background:#8b8b8b;border:2px solid #555;display:grid;place-items:center}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas><div id="crosshair"></div>
+<div id="hud"><div id="top">❤ <span id="health">10</span>/10 · Day <span id="day">1</span></div><div id="help">WASD move · Mouse look<br>Left click mine · Right click place · Space jump<br>1–9 select · E inventory</div><div id="hotbar"></div></div>
+<div id="start"><button id="startBtn">🌎 Enter Realmcraft</button></div>
+<div id="inventory"><h2>🎒 Inventory</h2><div id="invgrid" class="invgrid"></div><p>Press E to close</p></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script><script src="game.js"></script>
+</body></html>
