@@ -16,11 +16,14 @@ function setBlock(x,y,z,type){const k=key(x,y,z); if(!type){blocks.delete(k); co
 function get(x,y,z){return blocks.get(key(x,y,z))}
 function height(x,z){return Math.floor(3+Math.sin(x*.45)*.8+Math.cos(z*.35)*.8)}
 function tree(x,y,z){for(let i=0;i<4;i++)setBlock(x,y+i,z,'wood');for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=2;dy<=4;dy++)if(Math.abs(dx)+Math.abs(dz)+(dy===4?1:0)<4)setBlock(x+dx,y+dy,z+dz,'leaves')}
-function generate(){for(const m of meshes.values())scene.remove(m);blocks.clear();meshes.clear();for(let x=-22;x<22;x++)for(let z=-22;z<22;z++){const h=height(x,z);for(let y=0;y<=h;y++)setBlock(x,y,z,y===h?'grass':y>h-3?'dirt':'stone');if(Math.random()<.055&&h>2)tree(x,h+1,z)}setBlock(3,3,2,'coal');setBlock(-4,2,-3,'iron');setBlock(7,4,-6,'crystal')}
+const CHUNK=12,RENDER_DISTANCE=3,loadedChunks=new Set();
+function chunkKey(cx,cz){return cx+','+cz}
+function generateChunk(cx,cz){const ck=chunkKey(cx,cz);if(loadedChunks.has(ck))return;loadedChunks.add(ck);for(let x=cx*CHUNK;x<(cx+1)*CHUNK;x++)for(let z=cz*CHUNK;z<(cz+1)*CHUNK;z++){const h=height(x,z);for(let y=0;y<=h;y++)setBlock(x,y,z,y===h?'grass':y>h-3?'dirt':'stone');if(Math.random()<.045&&h>2)tree(x,h+1,z)}}
+function updateChunks(){const cx=Math.floor(camera.position.x/CHUNK),cz=Math.floor(camera.position.z/CHUNK);for(let dx=-RENDER_DISTANCE;dx<=RENDER_DISTANCE;dx++)for(let dz=-RENDER_DISTANCE;dz<=RENDER_DISTANCE;dz++)generateChunk(cx+dx,cz+dz)}
 function ui(){document.getElementById('health').textContent=10;document.getElementById('day').textContent=day;document.getElementById('hotbar').innerHTML=hot.map((s,i)=>'<div class="slot '+(i===selected?'sel':'')+'"><b>'+s[1]+'</b><br><span class="count">'+(inv[s[0]]||0)+'</span>'+(i+1)+'</div>').join('');document.getElementById('invgrid').innerHTML=Object.entries(inv).map(([k,v])=>'<div class="invslot" title="'+k+'">'+(hot.find(h=>h[0]===k)?.[1]||'')+'<br>'+v+'</div>').join('')}
 function save(){localStorage.setItem('realmcraft-3d',JSON.stringify({inv,selected,x:camera.position.x,y:camera.position.y,z:camera.position.z,yaw,pitch,day,time}))}
 function load(){try{const d=JSON.parse(localStorage.getItem('realmcraft-3d'));if(!d)return false;Object.assign(inv,d.inv||{});selected=d.selected||0;camera.position.set(d.x??0,d.y??8,d.z??8);yaw=d.yaw||0;pitch=d.pitch||0;day=d.day||1;time=d.time||0;return true}catch(e){return false}}
-generate(); if(!load()) {camera.position.set(0,7,8)} camera.rotation.set(pitch,yaw,0); 
+if(!load()) {camera.position.set(0,7,8)} updateChunks(); camera.rotation.set(pitch,yaw,0); 
 function topBlock(x,z){for(let y=20;y>=0;y--)if(get(x,y,z))return y;return 0}
 function canStand(x,z,y){return !get(Math.floor(x),Math.floor(y),Math.floor(z))&&!get(Math.floor(x),Math.floor(y+1),Math.floor(z))}
 function ray(){const r=new THREE.Raycaster();r.setFromCamera({x:0,y:0},camera);return r.intersectObjects([...meshes.values()])}
@@ -37,6 +40,6 @@ canvas.addEventListener('contextmenu',e=>e.preventDefault());
 function move(dt){const speed=5;let strafe=(keys.d?1:0)-(keys.a?1:0),forward=(keys.w?1:0)-(keys.s?1:0);const len=Math.hypot(strafe,forward)||1;strafe/=len;forward/=len;const sin=Math.sin(yaw),cos=Math.cos(yaw);const vx=(strafe*cos-forward*sin)*speed*dt,vz=(-strafe*sin-forward*cos)*speed*dt;let nx=camera.position.x+vx,nz=camera.position.z+vz;const feet=camera.position.y-1.6;if(canStand(nx,nz,Math.floor(feet)))camera.position.x=nx;if(canStand(camera.position.x,nz,Math.floor(feet)))camera.position.z=nz}
 let vy=0,onGround=false;
 function physics(dt){const x=Math.floor(camera.position.x),z=Math.floor(camera.position.z),feet=camera.position.y-1.6;let groundY=-1;for(let y=20;y>=0;y--){if(get(x,y,z)){groundY=y;break}}const targetY=groundY+2.6;if(groundY>=0&&feet<=groundY+1.05&&vy<=0){camera.position.y=targetY;vy=0;onGround=true}else{vy-=18*dt;camera.position.y+=vy*dt;onGround=false}if(keys[' ']&&onGround){vy=7;onGround=false;keys[' ']=false}}
-function loop(){const dt=Math.min(clock.getDelta(),.05);if(locked&&document.getElementById('inventory').style.display!=='block'){move(dt);physics(dt)}time+=dt;if(time>30){time=0;day++;scene.background.set(day%2?0x87ceeb:0x25365c);scene.fog.color.copy(scene.background);save()}renderer.render(scene,camera);requestAnimationFrame(loop)}
+function loop(){const dt=Math.min(clock.getDelta(),.05);if(locked&&document.getElementById('inventory').style.display!=='block'){move(dt);physics(dt);updateChunks()}time+=dt;if(time>30){time=0;day++;scene.background.set(day%2?0x87ceeb:0x25365c);scene.fog.color.copy(scene.background);save()}renderer.render(scene,camera);requestAnimationFrame(loop)}
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});ui();loop();
 })();
